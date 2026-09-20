@@ -14,7 +14,7 @@
                 <button id="nav-dashboard" class="active">Dashboard</button>
                 <button id="nav-processes">Processos</button>
                 <button id="nav-reports">Relatórios</button>
-                <button id="nav-admin" style="display:none;">Administração</button>
+                <button id="nav-users" style="display:none;">Usuários</button>
             </nav>
             <div class="sidebar-footer">
                 <button id="theme-toggle">🌓 Tema</button>
@@ -36,10 +36,39 @@
                     <div class="card"><h3>Autos de Infração</h3><p id="dash-infractions">0</p></div>
                     <div class="card"><h3>Multas (R$)</h3><p id="dash-money">R$ 0,00</p></div>
                 </div>
-                <h3>Processos em Destaque</h3>
+            </section>
+
+            <!-- Aba Processos -->
+            <section id="view-processes" class="view">
+                <h2>Gerenciamento de Processos</h2>
+                <button id="btn-new-process" class="btn-primary" style="margin-bottom: 20px;">+ Novo Processo</button>
                 <div class="table-container">
-                    <table id="dashboard-table">
-                        <thead><tr><th>Processo</th><th>Situação</th><th>Tipo</th><th>Prazo</th></tr></thead>
+                    <table id="processes-table">
+                        <thead><tr><th>Processo</th><th>Situação</th><th>Tipo</th><th>Abertura</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Aba Relatórios -->
+            <section id="view-reports" class="view">
+                <h2>Geração de Relatórios</h2>
+                <div class="dashboard-cards">
+                    <div class="card">
+                        <h3>Relatório Geral</h3>
+                        <p>Todos os processos, status e multas</p>
+                        <button id="btn-export-pdf" class="btn-primary" style="margin-top:10px;">Baixar PDF</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Aba Usuários (Apenas Admin) -->
+            <section id="view-users" class="view">
+                <h2>Controle de Usuários</h2>
+                <p style="margin-bottom: 20px;">O cadastro de novos usuários e senhas deve ser feito via convite pelo painel de segurança do Supabase. Aqui você gerencia a visualização dos perfis existentes.</p>
+                <div class="table-container">
+                    <table id="users-table">
+                        <thead><tr><th>Nome</th><th>Perfil</th><th>Data de Criação</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -54,7 +83,7 @@
                         <tbody></tbody>
                     </table>
                 </div>
-                <button onclick="document.getElementById('modal-overdue').close()">Ciente</button>
+                <button class="btn-primary" onclick="document.getElementById('modal-overdue').close()" style="margin-top: 15px;">Estou Ciente</button>
             </dialog>
 
             <!-- Modal Cadastro Processo -->
@@ -78,7 +107,7 @@
                     </div>
                     <div class="form-group">
                         <label>Descrição</label>
-                        <textarea id="proc-desc" required></textarea>
+                        <textarea id="proc-desc" required rows="3"></textarea>
                     </div>
                     <div class="form-group">
                         <label>Tipo de Ação</label>
@@ -89,26 +118,33 @@
                         </select>
                     </div>
                     
-                    <!-- Dynamic Fields -->
-                    <div id="fields-notification" style="display:none;">
-                        <label>Data Notificação</label>
-                        <input type="date" id="notif-date">
-                        <label>Prazo (Dias)</label>
-                        <input type="number" id="notif-days" min="1">
+                    <div id="fields-notification" style="display:none; background: var(--bg-color); padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                        <div class="form-group">
+                            <label>Data da Notificação</label>
+                            <input type="date" id="notif-date">
+                        </div>
+                        <div class="form-group">
+                            <label>Prazo (em Dias)</label>
+                            <input type="number" id="notif-days" min="1">
+                        </div>
                         <p>Vencimento Calculado: <strong id="notif-calc">-</strong></p>
                     </div>
 
-                    <div id="fields-infraction" style="display:none;">
-                        <label>Valor Multa (UFIV)</label>
-                        <input type="number" step="0.01" id="inf-ufiv-val">
-                        <label>Valor atual da UFIV (R$)</label>
-                        <input type="number" step="0.01" id="inf-ufiv-rate">
+                    <div id="fields-infraction" style="display:none; background: var(--bg-color); padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                        <div class="form-group">
+                            <label>Valor da Multa (UFIV)</label>
+                            <input type="number" step="0.01" id="inf-ufiv-val">
+                        </div>
+                        <div class="form-group">
+                            <label>Valor atual da UFIV (R$)</label>
+                            <input type="number" step="0.01" id="inf-ufiv-rate">
+                        </div>
                         <p>Total Calculado: <strong id="inf-calc">-</strong></p>
                     </div>
 
                     <div class="form-actions">
                         <button type="button" class="btn-cancel" onclick="document.getElementById('modal-process').close()">Cancelar</button>
-                        <button type="submit" class="btn-primary">Salvar</button>
+                        <button type="submit" class="btn-primary">Salvar Processo</button>
                     </div>
                 </form>
             </dialog>
