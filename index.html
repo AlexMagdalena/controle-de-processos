@@ -28,7 +28,6 @@
                 <div class="user-info">Bem-vindo, <span id="user-name-display"></span></div>
             </header>
 
-            <!-- Dashboard View -->
             <section id="view-dashboard" class="view active">
                 <div class="dashboard-cards">
                     <div class="card"><h3>Total de Processos</h3><p id="dash-total">0</p></div>
@@ -38,7 +37,6 @@
                 </div>
             </section>
 
-            <!-- Aba Processos -->
             <section id="view-processes" class="view">
                 <h2>Gerenciamento de Processos</h2>
                 <button id="btn-new-process" class="btn-primary" style="margin-bottom: 20px;">+ Novo Processo</button>
@@ -50,7 +48,6 @@
                 </div>
             </section>
 
-            <!-- Aba Relatórios -->
             <section id="view-reports" class="view">
                 <h2>Geração de Relatórios</h2>
                 <div class="dashboard-cards">
@@ -62,10 +59,9 @@
                 </div>
             </section>
 
-            <!-- Aba Usuários (Apenas Admin) -->
             <section id="view-users" class="view">
                 <h2>Controle de Usuários</h2>
-                <p style="margin-bottom: 20px;">O cadastro de novos usuários e senhas deve ser feito via convite pelo painel de segurança do Supabase. Aqui você gerencia a visualização dos perfis existentes.</p>
+                <p style="margin-bottom: 20px;">Gerencie a visualização dos perfis existentes.</p>
                 <div class="table-container">
                     <table id="users-table">
                         <thead><tr><th>Nome</th><th>Perfil</th><th>Data de Criação</th></tr></thead>
@@ -74,7 +70,6 @@
                 </div>
             </section>
 
-            <!-- Modal Vencidos Automático -->
             <dialog id="modal-overdue">
                 <h2>⚠️ Alerta: Notificações Vencidas</h2>
                 <div class="table-container">
@@ -86,7 +81,6 @@
                 <button class="btn-primary" onclick="document.getElementById('modal-overdue').close()" style="margin-top: 15px;">Estou Ciente</button>
             </dialog>
 
-            <!-- Modal Cadastro Processo -->
             <dialog id="modal-process">
                 <h2>Cadastrar / Editar Processo</h2>
                 <form id="form-process">
@@ -119,26 +113,14 @@
                     </div>
                     
                     <div id="fields-notification" style="display:none; background: var(--bg-color); padding: 10px; border-radius: 4px; margin-bottom: 10px;">
-                        <div class="form-group">
-                            <label>Data da Notificação</label>
-                            <input type="date" id="notif-date">
-                        </div>
-                        <div class="form-group">
-                            <label>Prazo (em Dias)</label>
-                            <input type="number" id="notif-days" min="1">
-                        </div>
+                        <div class="form-group"><label>Data da Notificação</label><input type="date" id="notif-date"></div>
+                        <div class="form-group"><label>Prazo (em Dias)</label><input type="number" id="notif-days" min="1"></div>
                         <p>Vencimento Calculado: <strong id="notif-calc">-</strong></p>
                     </div>
 
                     <div id="fields-infraction" style="display:none; background: var(--bg-color); padding: 10px; border-radius: 4px; margin-bottom: 10px;">
-                        <div class="form-group">
-                            <label>Valor da Multa (UFIV)</label>
-                            <input type="number" step="0.01" id="inf-ufiv-val">
-                        </div>
-                        <div class="form-group">
-                            <label>Valor atual da UFIV (R$)</label>
-                            <input type="number" step="0.01" id="inf-ufiv-rate">
-                        </div>
+                        <div class="form-group"><label>Valor da Multa (UFIV)</label><input type="number" step="0.01" id="inf-ufiv-val"></div>
+                        <div class="form-group"><label>Valor atual da UFIV (R$)</label><input type="number" step="0.01" id="inf-ufiv-rate"></div>
                         <p>Total Calculado: <strong id="inf-calc">-</strong></p>
                     </div>
 
