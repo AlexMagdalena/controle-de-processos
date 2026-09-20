@@ -2,12 +2,11 @@ import { supabase } from './supabase';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
-// Estado Global
 let currentUser: any = null;
 let userProfile: any = null;
 
 // =======================================
-// INICIALIZAÇÃO
+// INICIALIZAÇÃO E BLINDAGEM DE PERFIL
 // =======================================
 async function initApp() {
     const { data: { user } } = await supabase.auth.getUser();
@@ -18,7 +17,6 @@ async function initApp() {
     }
     currentUser = user;
 
-    // Busca o perfil atualizado do banco de dados
     const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
     
     if (error || !profile) {
@@ -28,12 +26,44 @@ async function initApp() {
         userProfile = profile;
         document.getElementById('user-name-display')!.textContent = profile.full_name;
         
-        // Exibe a aba de usuários se o perfil for admin
+        // Garante a exibição da aba de usuários se o perfil for admin
         if (profile.role === 'admin') {
-            const navUsers = document.getElementById('nav-users');
+            let navUsers = document.getElementById('nav-users');
+            
+            if (!navUsers) {
+                const nav = document.querySelector('aside nav');
+                if (nav) {
+                    navUsers = document.createElement('button');
+                    navUsers.id = 'nav-users';
+                    navUsers.textContent = 'Usuários';
+                    nav.appendChild(navUsers);
+                }
+            }
+            
             if (navUsers) {
                 navUsers.style.display = 'block';
             }
+            
+            if (!document.getElementById('view-users')) {
+                const mainContent = document.querySelector('main.content');
+                if (mainContent) {
+                    const viewDiv = document.createElement('section');
+                    viewDiv.id = 'view-users';
+                    viewDiv.className = 'view';
+                    viewDiv.innerHTML = `
+                        <h2>Controle de Usuários</h2>
+                        <p style="margin-bottom: 20px;">Gerenciamento de perfis de acesso cadastrados.</p>
+                        <div class="table-container">
+                            <table id="users-table">
+                                <thead><tr><th>Nome</th><th>Perfil</th><th>Data de Criação</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    `;
+                    mainContent.appendChild(viewDiv);
+                }
+            }
+
             loadUsers();
         }
     }
@@ -54,9 +84,16 @@ function setupNavigation() {
     const views = document.querySelectorAll('.view');
 
     navButtons.forEach(btn => {
+        // Remove ouvintes duplicados clonando o elemento se necessário, ou apenas reatribuindo
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode?.replaceChild(newBtn, btn);
+    });
+
+    // Reatribui os eventos após atualizar os botões
+    document.querySelectorAll('nav button').forEach(btn => {
         btn.addEventListener('click', () => {
-            navButtons.forEach(b => b.classList.remove('active'));
-            views.forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             
             btn.classList.add('active');
             const targetId = btn.id.replace('nav-', 'view-');
@@ -81,13 +118,11 @@ function setupTheme() {
 // EVENTOS & CÁLCULOS
 // =======================================
 function setupEventListeners() {
-    // Sair do sistema
     document.getElementById('btn-logout')?.addEventListener('click', async () => {
         await supabase.auth.signOut();
         window.location.href = '/login.html';
     });
 
-    // Abrir Modal de Novo Processo
     document.getElementById('btn-new-process')?.addEventListener('click', () => {
         (document.getElementById('form-process') as HTMLFormElement).reset();
         document.getElementById('proc-id')!.setAttribute('value', '');
@@ -96,40 +131,36 @@ function setupEventListeners() {
         (document.getElementById('modal-process') as HTMLDialogElement).showModal();
     });
 
-    // Mostrar campos específicos no Formulário
     const typeSelect = document.getElementById('proc-type') as HTMLSelectElement;
-    typeSelect.addEventListener('change', (e) => {
+    typeSelect?.addEventListener('change', (e) => {
         const val = (e.target as HTMLSelectElement).value;
         document.getElementById('fields-notification')!.style.display = val === 'Notificação' ? 'block' : 'none';
         document.getElementById('fields-infraction')!.style.display = val === 'Auto de Infração' ? 'block' : 'none';
     });
 
-    // Cálculo Prazo Automático
     const notifDate = document.getElementById('notif-date') as HTMLInputElement;
     const notifDays = document.getElementById('notif-days') as HTMLInputElement;
     const calcDate = () => {
-        if (notifDate.value && notifDays.value) {
+        if (notifDate?.value && notifDays?.value) {
             const d = new Date(notifDate.value);
             d.setDate(d.getDate() + parseInt(notifDays.value));
             document.getElementById('notif-calc')!.textContent = d.toLocaleDateString('pt-BR');
         }
     };
-    notifDate.addEventListener('input', calcDate);
-    notifDays.addEventListener('input', calcDate);
+    notifDate?.addEventListener('input', calcDate);
+    notifDays?.addEventListener('input', calcDate);
 
-    // Cálculo UFIV Automático
     const ufivVal = document.getElementById('inf-ufiv-val') as HTMLInputElement;
     const ufivRate = document.getElementById('inf-ufiv-rate') as HTMLInputElement;
     const calcUfiv = () => {
-        if (ufivVal.value && ufivRate.value) {
+        if (ufivVal?.value && ufivRate?.value) {
             const total = parseFloat(ufivVal.value) * parseFloat(ufivRate.value);
             document.getElementById('inf-calc')!.textContent = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
         }
     };
-    ufivVal.addEventListener('input', calcUfiv);
-    ufivRate.addEventListener('input', calcUfiv);
+    ufivVal?.addEventListener('input', calcUfiv);
+    ufivRate?.addEventListener('input', calcUfiv);
 
-    // Salvar Processo (Insert/Update)
     document.getElementById('form-process')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -166,12 +197,11 @@ function setupEventListeners() {
         await loadProcesses();
     });
 
-    // Gerar Relatório PDF
     document.getElementById('btn-export-pdf')?.addEventListener('click', generatePDFReport);
 }
 
 // =======================================
-// CARREGAMENTO DE DADOS (READ)
+// CARREGAMENTO DE DADOS
 // =======================================
 async function checkOverdueNotifications() {
     const today = new Date().toISOString().split('T')[0];
@@ -181,16 +211,18 @@ async function checkOverdueNotifications() {
         .lt('due_date', today);
 
     if (overdue && overdue.length > 0) {
-        const tbody = document.querySelector('#overdue-table tbody')!;
-        tbody.innerHTML = overdue.map(p => {
-            const daysLate = Math.floor((new Date().getTime() - new Date(p.due_date).getTime()) / (1000 * 3600 * 24));
-            return `<tr>
-                <td>${p.process_number}</td>
-                <td>${new Date(p.due_date).toLocaleDateString('pt-BR')}</td>
-                <td class="status-red">${daysLate} dias</td>
-            </tr>`;
-        }).join('');
-        (document.getElementById('modal-overdue') as HTMLDialogElement).showModal();
+        const tbody = document.querySelector('#overdue-table tbody');
+        if (tbody) {
+            tbody.innerHTML = overdue.map(p => {
+                const daysLate = Math.floor((new Date().getTime() - new Date(p.due_date).getTime()) / (1000 * 3600 * 24));
+                return `<tr>
+                    <td>${p.process_number}</td>
+                    <td>${new Date(p.due_date).toLocaleDateString('pt-BR')}</td>
+                    <td class="status-red">${daysLate} dias</td>
+                </tr>`;
+            }).join('');
+        }
+        (document.getElementById('modal-overdue') as HTMLDialogElement)?.showModal();
     }
 }
 
@@ -205,44 +237,45 @@ async function loadDashboard() {
     const today = new Date().toISOString().split('T')[0];
     const overdueCount = processes.filter(p => p.type === 'Notificação' && p.due_date < today).length;
 
-    document.getElementById('dash-total')!.textContent = total.toString();
-    document.getElementById('dash-overdue')!.textContent = overdueCount.toString();
-    document.getElementById('dash-infractions')!.textContent = infractions.length.toString();
-    document.getElementById('dash-money')!.textContent = `R$ ${money.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    if (document.getElementById('dash-total')) document.getElementById('dash-total')!.textContent = total.toString();
+    if (document.getElementById('dash-overdue')) document.getElementById('dash-overdue')!.textContent = overdueCount.toString();
+    if (document.getElementById('dash-infractions')) document.getElementById('dash-infractions')!.textContent = infractions.length.toString();
+    if (document.getElementById('dash-money')) document.getElementById('dash-money')!.textContent = `R$ ${money.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 }
 
 async function loadProcesses() {
     const { data } = await supabase.from('processes').select('*').order('created_at', { ascending: false });
     if (!data) return;
     
-    const tbody = document.querySelector('#processes-table tbody')!;
-    tbody.innerHTML = data.map(p => `
-        <tr>
-            <td><strong>${p.process_number}</strong></td>
-            <td>${p.status}</td>
-            <td>${p.type}</td>
-            <td>${new Date(p.open_date).toLocaleDateString('pt-BR')}</td>
-        </tr>
-    `).join('');
+    const tbody = document.querySelector('#processes-table tbody');
+    if (tbody) {
+        tbody.innerHTML = data.map(p => `
+            <tr>
+                <td><strong>${p.process_number}</strong></td>
+                <td>${p.status}</td>
+                <td>${p.type}</td>
+                <td>${new Date(p.open_date).toLocaleDateString('pt-BR')}</td>
+            </tr>
+        `).join('');
+    }
 }
 
 async function loadUsers() {
     const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
     if (!data) return;
     
-    const tbody = document.querySelector('#users-table tbody')!;
-    tbody.innerHTML = data.map(u => `
-        <tr>
-            <td>${u.full_name}</td>
-            <td style="text-transform: capitalize;">${u.role}</td>
-            <td>${new Date(u.created_at).toLocaleDateString('pt-BR')}</td>
-        </tr>
-    `).join('');
+    const tbody = document.querySelector('#users-table tbody');
+    if (tbody) {
+        tbody.innerHTML = data.map(u => `
+            <tr>
+                <td>${u.full_name}</td>
+                <td style="text-transform: capitalize;">${u.role}</td>
+                <td>${new Date(u.created_at).toLocaleDateString('pt-BR')}</td>
+            </tr>
+        `).join('');
+    }
 }
 
-// =======================================
-// RELATÓRIOS (PDF)
-// =======================================
 async function generatePDFReport() {
     const { data: processes } = await supabase.from('processes').select('*');
     const doc = new jsPDF();
@@ -264,5 +297,4 @@ async function generatePDFReport() {
     doc.save('relatorio-processos.pdf');
 }
 
-// Inicia Aplicação
 initApp();
