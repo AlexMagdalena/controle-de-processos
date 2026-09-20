@@ -11,23 +11,31 @@ let userProfile: any = null;
 // =======================================
 async function initApp() {
     const { data: { user } } = await supabase.auth.getUser();
+    
     if (!user) {
         window.location.href = '/login.html';
         return;
     }
     currentUser = user;
 
-    const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-    userProfile = profile;
+    // Busca o perfil com tratamento de erro (blindagem)
+    const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
     
-    document.getElementById('user-name-display')!.textContent = profile.full_name;
-    
-    // Libera aba de usuários para admin
-    if (profile.role === 'admin') {
-        document.getElementById('nav-users')!.style.display = 'block';
-        loadUsers();
+    if (error || !profile) {
+        console.warn("Perfil não encontrado na tabela profiles. Usando e-mail como fallback.");
+        document.getElementById('user-name-display')!.textContent = user.email || 'Usuário';
+    } else {
+        userProfile = profile;
+        document.getElementById('user-name-display')!.textContent = profile.full_name;
+        
+        // Libera aba de usuários para admin
+        if (profile.role === 'admin') {
+            document.getElementById('nav-users')!.style.display = 'block';
+            loadUsers();
+        }
     }
 
+    // A partir daqui, o código não trava mais
     setupTheme();
     setupNavigation();
     setupEventListeners();
