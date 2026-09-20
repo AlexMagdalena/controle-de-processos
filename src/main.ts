@@ -18,24 +18,26 @@ async function initApp() {
     }
     currentUser = user;
 
-    // Busca o perfil com tratamento de erro (blindagem)
+    // Busca o perfil atualizado do banco de dados
     const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
     
     if (error || !profile) {
-        console.warn("Perfil não encontrado na tabela profiles. Usando e-mail como fallback.");
+        console.warn("Perfil não encontrado na tabela profiles.");
         document.getElementById('user-name-display')!.textContent = user.email || 'Usuário';
     } else {
         userProfile = profile;
         document.getElementById('user-name-display')!.textContent = profile.full_name;
         
-        // Libera aba de usuários para admin
+        // Exibe a aba de usuários se o perfil for admin
         if (profile.role === 'admin') {
-            document.getElementById('nav-users')!.style.display = 'block';
+            const navUsers = document.getElementById('nav-users');
+            if (navUsers) {
+                navUsers.style.display = 'block';
+            }
             loadUsers();
         }
     }
 
-    // A partir daqui, o código não trava mais
     setupTheme();
     setupNavigation();
     setupEventListeners();
