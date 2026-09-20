@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Processos</title>
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+    <div id="app-layout">
+        <aside class="sidebar">
+            <h2>ProcessControl</h2>
+            <nav>
+                <button id="nav-dashboard" class="active">Dashboard</button>
+                <button id="nav-processes">Processos</button>
+                <button id="nav-reports">Relatórios</button>
+                <button id="nav-admin" style="display:none;">Administração</button>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="theme-toggle">🌓 Tema</button>
+                <button id="btn-logout">Sair</button>
+            </div>
+        </aside>
+
+        <main class="content">
+            <header>
+                <h1>Painel de Controle</h1>
+                <div class="user-info">Bem-vindo, <span id="user-name-display"></span></div>
+            </header>
+
+            <!-- Dashboard View -->
+            <section id="view-dashboard" class="view active">
+                <div class="dashboard-cards">
+                    <div class="card"><h3>Total de Processos</h3><p id="dash-total">0</p></div>
+                    <div class="card warning"><h3>Notificações Vencidas</h3><p id="dash-overdue">0</p></div>
+                    <div class="card"><h3>Autos de Infração</h3><p id="dash-infractions">0</p></div>
+                    <div class="card"><h3>Multas (R$)</h3><p id="dash-money">R$ 0,00</p></div>
+                </div>
+                <h3>Processos em Destaque</h3>
+                <div class="table-container">
+                    <table id="dashboard-table">
+                        <thead><tr><th>Processo</th><th>Situação</th><th>Tipo</th><th>Prazo</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Modal Vencidos Automático -->
+            <dialog id="modal-overdue">
+                <h2>⚠️ Alerta: Notificações Vencidas</h2>
+                <div class="table-container">
+                    <table id="overdue-table">
+                        <thead><tr><th>Processo</th><th>Vencimento</th><th>Dias Atraso</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <button onclick="document.getElementById('modal-overdue').close()">Ciente</button>
+            </dialog>
+
+            <!-- Modal Cadastro Processo -->
+            <dialog id="modal-process">
+                <h2>Cadastrar / Editar Processo</h2>
+                <form id="form-process">
+                    <input type="hidden" id="proc-id">
+                    <div class="form-group">
+                        <label>Número do Processo</label>
+                        <input type="text" id="proc-number" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Situação</label>
+                        <select id="proc-status" required>
+                            <option value="Em andamento">Em andamento</option>
+                            <option value="Fiscalização">Fiscalização</option>
+                            <option value="Vistoria">Vistoria</option>
+                            <option value="Aguardando providências">Aguardando providências</option>
+                            <option value="Despacho">Despacho</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <textarea id="proc-desc" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Ação</label>
+                        <select id="proc-type" required>
+                            <option value="Nenhum">Nenhum</option>
+                            <option value="Notificação">Notificação</option>
+                            <option value="Auto de Infração">Auto de Infração</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Dynamic Fields -->
+                    <div id="fields-notification" style="display:none;">
+                        <label>Data Notificação</label>
+                        <input type="date" id="notif-date">
+                        <label>Prazo (Dias)</label>
+                        <input type="number" id="notif-days" min="1">
+                        <p>Vencimento Calculado: <strong id="notif-calc">-</strong></p>
+                    </div>
+
+                    <div id="fields-infraction" style="display:none;">
+                        <label>Valor Multa (UFIV)</label>
+                        <input type="number" step="0.01" id="inf-ufiv-val">
+                        <label>Valor atual da UFIV (R$)</label>
+                        <input type="number" step="0.01" id="inf-ufiv-rate">
+                        <p>Total Calculado: <strong id="inf-calc">-</strong></p>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="document.getElementById('modal-process').close()">Cancelar</button>
+                        <button type="submit" class="btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </dialog>
+        </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

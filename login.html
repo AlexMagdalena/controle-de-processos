@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Controle de Processos</title>
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+<body class="login-body">
+    <div class="login-card">
+        <h2>Acesso ao Sistema</h2>
+        <form id="login-form">
+            <div class="form-group">
+                <label>E-mail</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label>Senha</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit" class="btn-primary">Entrar</button>
+        </form>
+        <p id="login-error" class="error-msg"></p>
+    </div>
+
+    <!-- Modal Primeiro Acesso -->
+    <dialog id="modal-first-access">
+        <h2>Segurança: Redefinição de Senha</h2>
+        <form id="reset-pwd-form">
+            <div class="form-group">
+                <label>Nova Senha</label>
+                <input type="password" id="new-pwd" required minlength="8">
+            </div>
+            <button type="submit" class="btn-primary">Atualizar Senha</button>
+        </form>
+    </dialog>
+
+    <script type="module" src="/src/auth.ts"></script>
+</body>
+</html>
